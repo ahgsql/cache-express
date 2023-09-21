@@ -20,13 +20,19 @@ Boost the performance of your Express.js web applications with this middleware t
 
 The Express Cache Middleware is a package that enables easy and efficient caching for your small or mid-sized Express.js applications. It enhances the performance of your web server by storing and serving previously generated responses, reducing the load on your server and improving response times. For advanced caching mechanism or big applications, please go for Redis or memcached.
 
-**Usage:**
+## Install and Usage
+
+You can install the Express Cache Middleware package using npm. Open your terminal or command prompt and run the following command:
+
+```sh
+npm install cache-express
+```
 
 To use the Express Cache Middleware, simply import it and apply it as middleware to your Express.js routes.
 
 ```javascript
 import express from "express";
-import expressCache from "express-cache";
+import expressCache from "cache-express";
 
 const app = express();
 
@@ -53,7 +59,7 @@ The Express Cache Middleware provides several configuration options to tailor ca
 
 ```javascript
 import express from "express";
-import expressCache from "express-cache";
+import expressCache from "cache-express";
 
 const app = express();
 
@@ -113,7 +119,7 @@ app.get(
 
    ```javascript
    import express from "express";
-   import expressCache from "express-cache-middleware";
+   import expressCache from "cache-express";
 
    const app = express();
 

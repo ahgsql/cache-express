@@ -1,5 +1,5 @@
 {
-	"name": "express-cache",
+	"name": "cache-express",
 	"version": "1.0.0",
 	"description": "Express Cache Middleware: Effortlessly cache responses with custom timeouts, dependencies, and enhanced performance",
 	"license": "MIT",
@@ -14,8 +14,7 @@
 		"node": ">=16"
 	},
 	"scripts": {
-		"test": "ava",
-		"postbuild": "npm-prepare-dist"
+		"test": "ava"
 	},
 	"files": [
 		"index.js"
