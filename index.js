@@ -40,7 +40,7 @@ class MemoryCache {
 		}
 
 		if (item && (!item.expireTime || item.expireTime > Date.now())) {
-			return item.value + "<b>Cache";
+			return item.value;
 		} else {
 			delete this.cache[key];
 			return null;
@@ -186,5 +186,6 @@ function expressCache(opts = {}) {
 		}
 	};
 }
-export default expressCache;
-export { hashString, MemoryCache };
+module.exports = expressCache;
+module.exports.hash = hashString;
+module.exports.MemoryCache = MemoryCache;

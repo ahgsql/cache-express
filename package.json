@@ -1,14 +1,13 @@
 {
 	"name": "cache-express",
-	"version": "1.0.0",
+	"version": "1.0.2",
 	"description": "Express Cache Middleware: Effortlessly cache responses with custom timeouts, dependencies, and enhanced performance",
 	"license": "MIT",
-	"repository": "https://github.com/ahgsql/express-cache",
+	"repository": "https://github.com/ahgsql/cache-express",
 	"author": {
 		"name": "Ali Haydar GÜLEÇ",
 		"email": "alihaydargulec@gmail.com"
 	},
-	"type": "module",
 	"exports": "./index.js",
 	"engines": {
 		"node": ">=16"
