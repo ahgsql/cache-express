@@ -127,6 +127,9 @@ const cache = new MemoryCache();
  * @param {Function} [opts.dependsOn=() => []] - A function that returns an array of dependency values for cache checking.
  * @param {number} [opts.timeOut=3600000] - Timeout in milliseconds for cache expiration. Default is 1 hour (3600000 ms).
  * @param {Function} [opts.onTimeout=() => { console.log("Cache removed"); }] - A callback function to execute when a cached item expires.
+ * @param {Function} [opts.onCacheMiss=(url: string) => {  }] - A callback function to execute when a request is not found in cache.
+ * @param {Function} [opts.onCacheServed=(url: string) => {  }] - A callback function to execute when a cached item is served.
+ * @param {Function} [opts.onCacheStored=(url: string) => {  }] - A callback function to execute when a cached item is stored / updated.
  * @returns {function} - Middleware function.
  */
 function expressCache(opts = {}) {
@@ -136,6 +139,9 @@ function expressCache(opts = {}) {
 		onTimeout: () => {
 			console.log("Cache removed");
 		},
+		onCacheMiss: () => {},
+		onCacheServed: () => {},
+		onCacheStored: () => {}
 	};
 
 	const options = {
@@ -143,42 +149,66 @@ function expressCache(opts = {}) {
 		...opts,
 	};
 
-	const { dependsOn, timeOut, onTimeout } = options;
+	const { dependsOn, timeOut, onTimeout, onCacheMiss, onCacheServed, onCacheStored } = options;
 
 	return function (req, res, next) {
-		const cacheKey = "c_" + hashString(req.originalUrl || req.url);
+		const cacheUrl = req.originalUrl || req.url;
+		const cacheKey = "c_" + hashString(cacheUrl);
 		const depArrayValues = dependsOn();
 
 		const cachedResponse = cache.get(cacheKey, depArrayValues);
 
 		if (cachedResponse) {
-			if (typeof cachedResponse === "string") {
+			const cachedBody = cachedResponse.body;
+			const cachedHeaders = cachedResponse.headers;
+			const cachedStatusCode = cachedResponse.statusCode;
+
+			// Set headers that we cached
+			if (cachedHeaders) {
+				res.set(JSON.parse(cachedHeaders));
+			}
+
+			if (typeof cachedBody === "string") {
 				try {
-					const jsonData = JSON.parse(cachedResponse);
-					res.json(jsonData);
+					const jsonData = JSON.parse(cachedBody);
+					onCacheServed(cacheUrl);
+					res.status(cachedStatusCode).json(jsonData);
 				} catch (error) {
-					res.send(cachedResponse);
+					onCacheServed(cacheUrl);
+					res.status(cachedStatusCode).send(cachedBody);
 				}
 			} else {
-				res.send(cachedResponse);
+				onCacheServed(cacheUrl);
+				res.status(cachedStatusCode).send(cachedBody);
 			}
 		} else {
+			onCacheMiss(cacheUrl);
 			const originalSend = res.send;
 			const originalJson = res.json;
 
 			res.send = function (body) {
 				cache.set(
 					cacheKey,
-					typeof body === "object" ? JSON.stringify(body) : body,
+					{
+						body: typeof body === "object" ? JSON.stringify(body) : body,
+						headers: JSON.stringify(res.getHeaders()),
+						statusCode: res.statusCode
+					},
 					timeOut,
 					onTimeout,
 					depArrayValues
 				);
+				onCacheStored(cacheUrl);
 				originalSend.call(this, body);
 			};
 
 			res.json = function (body) {
-				cache.set(cacheKey, body, timeOut, onTimeout, depArrayValues);
+				cache.set(cacheKey, {
+					body: body,
+					headers: JSON.stringify(res.getHeaders()),
+					statusCode: res.statusCode
+				}, timeOut, onTimeout, depArrayValues);
+				onCacheStored(cacheUrl);
 				originalJson.call(this, body);
 			};
 
